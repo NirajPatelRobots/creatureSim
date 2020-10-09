@@ -1,0 +1,10 @@
+Creature 0x228fde1a448
+Body size 2.621 x 1.566 x 2.041
+7 limbs:
+	Side: 0 location: 0.164 length: 2.022 size: 0.2
+	Side: 0 location: 0.434 length: 2.479 size: 0.2
+	Side: 1 location: 0.503 length: 1.062 size: 0.385
+	Side: 1 location: 0.86 length: 1.164 size: 0.324
+	Side: 2 location: 0.388 length: 2.169 size: 0.319
+	Side: 2 location: 0.778 length: 2.572 size: 0.324
+	Side: 3 location: 0.053 length: 2.085 size: 0.2

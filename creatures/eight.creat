@@ -1,0 +1,11 @@
+Creature 0x1c6152d8608
+Body size 2.045 x 2.259 x 1.223
+8 limbs:
+	Side: 0 location: 0.056 length: 2.056 size: 0.2
+	Side: 0 location: 0.312 length: 1.69 size: 0.2
+	Side: 0 location: 0.618 length: 1.622 size: 0.388
+	Side: 1 location: 0.653 length: 2.785 size: 0.306
+	Side: 2 location: 0.177 length: 1.568 size: 0.2
+	Side: 2 location: 0.329 length: 2.76 size: 0.744
+	Side: 3 location: 0.103 length: 1.275 size: 0.538
+	Side: 3 location: 0.551 length: 2.137 size: 0.439
