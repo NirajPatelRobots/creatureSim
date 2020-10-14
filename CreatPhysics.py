@@ -14,6 +14,7 @@ TODO:
     damp leg oscilalations?
     body as impenetrable surfaces
     I don't think angvel_to_rotmat works for multiple rotmats
+    maybe np.where speeds up some stuff
 
 @author: Niraj
 """
@@ -34,7 +35,7 @@ onlyup_vec_mask = np.array([0.,1.,0.]).reshape(3,1)
 
 def unit(v):
     """return the normalized vector in the same direction as v with length = 1"""
-    return v / np.linalg.norm(v, axis=1)
+    return v / np.sum(v**2, axis=1, keepdims=True)
 
 def airDrag(vel, strength = 2):
     """ given a points with velocities, find the forces from air drag on those points. 

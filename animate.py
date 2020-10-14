@@ -13,6 +13,7 @@ TODO:
     error checking for loading logs/ annotations
     way to remove annotations
     make creat.v destructors so creature animation gets deleted on error
+    BUG a 1 second animation had a time: 5.00 tag in the bottom
 
 """
 import vpython as v
@@ -164,7 +165,7 @@ def animate(creature, fileName, speed=20, annotations = []): #make an animation,
     inFile.close()
 
 def animate_main(creature, speed = None):
-    fileName = "drop1" # by default
+    fileName = "recent" # by default
     if speed is None:
         speed = 10
     if not creature.v:
@@ -180,7 +181,7 @@ def animate_main(creature, speed = None):
 #        annotations.append(TestArrows(actLogger["limbPos"],
 #                                      actLogger["walkForce"], scale = 0.03,
 #                                        color = v.color.green))
-#        annotations.append(TestSpheres(actLogger["desiredPoseCart"], color = v.color.red))e
+#        annotations.append(TestSpheres(actLogger["desiredPoseCart"], color = v.color.red))
         pass
     while True:
         args = input(">>>Enter animate (default), speed, load, log, arrows, spheres, or exit: ").split()

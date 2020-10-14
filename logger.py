@@ -15,8 +15,7 @@ allLoggers - a dictionary of all current Logger and subclass objects,
     keys = names and values = objects
 tOffset (float) - the time in [s] it takes to start and end the timer. Can 
         be used to offset a measured system time from time.clock().
-"""
-"""
+
 TODO:
     finish developing DictLog
     make a decorator for locking a function (does one exist?)
@@ -25,6 +24,7 @@ TODO:
     make it so you can set a recommended view scale
     make it always run in another thread?
     make a reset for all logs in a logger
+    make it possible to add multiple loggers in one line
 """
 import numpy as np
 import os.path
