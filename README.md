@@ -17,7 +17,6 @@ Displaying animations requires [VPython](https://vpython.org/) 7.5 or newer
 
 ## Major Tasks TODO
 - finish code for generating (and testing) walkcycles
-- better poses?
 - decision making functionality
 - learning algorithm for walkCycles
 - speed up physics

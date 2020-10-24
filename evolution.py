@@ -212,6 +212,7 @@ def newRandomCreature():
         for i in range(random.randint(0,3)):
             limbs.append(newRandomLimb(side = sideNum))
     return Creature.Creature(size, limbs)
+    
 simpleCreature = Creature.Creature(bodySize = [4,1.5,1], limbs = [Creature.Limb(1,.2,2,.3,),
                           Creature.Limb(1,.8,2,.3), Creature.Limb(3,.2,2,.3),
                           Creature.Limb(3,.8,2,.3)], name = "simpleCreature")
