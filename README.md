@@ -9,6 +9,8 @@ Requires numpy 1.17 or newer (honestly, older probably works too)
 
 Displaying animations requires [VPython](https://vpython.org/) 7.5 or newer
 
+Requires Cython 0.29 or newer (for now)
+
 ## Concepts
 - A *creature* is an object that can move.
 - A *physState* is the physical location of the creature and all its limbs.

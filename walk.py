@@ -207,7 +207,7 @@ def walkcycleTest(loud = False):
                 creatNum, creat.numLimbs, depth, 
                 np.average(createTimes)*1000, np.std(createTimes)*1000,
                 np.average(runTimes)*1000/numRunIncrements, 
-                np.std(runTimes)*1000/numRunIncrements)
+                np.std(runTimes)*1000/numRunIncrements))
     
     print("Walkcycle Test 2")
     #Test 2: test saving and loading
@@ -242,11 +242,11 @@ def walkcycleTest(loud = False):
             
     print("\rPassed Save/Load Test")
  
- def testSimilarParams(p, pCopy, depth = 1, depthCopy = 1):
+def testSimilarParams(p, pCopy, depth = 1, depthCopy = 1):
     if depth == depthCopy:
-        return np.allclose(p, pCopy, rtol=0, atol = 1e-12))
+        return np.allclose(p, pCopy, rtol=0, atol = 1e-12)
     elif depth > depthCopy:
-        return np.allclose(p[:,:,0:depthCopy], pCopy, rtol=0, atol = 1e-12))
+        return np.allclose(p[:,:,0:depthCopy], pCopy, rtol=0, atol = 1e-12)
     elif depth < depthCopy:
         return (np.allclose(pCopy[:,:,depth:], np.zeros(p.size()), atol = 1e-12)
                 and np.allclose(p, pCopy[:,:,0:depth], rtol=0, atol = 1e-12))
