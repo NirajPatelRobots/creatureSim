@@ -52,7 +52,7 @@ while True:
         while not command == "exit":
             eval(input(">>>"))
     elif command == "new":
-        actCreat = ev.makeReasonable(ev.newRandomCreature())
+        actCreat = ev.newRandomCreature()
         sim.removeCreature(0)
         sim.addCreature(actCreat)
         creatSave.saveCreature(actCreat, fileName = "lastcreat.txt")
@@ -138,23 +138,8 @@ while True:
                   countmax * simulator.h, "seconds of simulation.")
             actCreat.logger.save(loud = False)
             Pose.printPose(actCreat, Pose.getPose(actCreat, sim.physStates[0]))
-    elif command == "put":
-        #pos = Pos.generateRandomPos(actCreat.numLimbs)
-        pos = Pos.natStartPos(actCreat)
-        Pos.printPos(actCreat, pos)
-        actCreat.reset(pos)
-        inFile = creatSave.newFile()[0]
-        time.sleep(.3)
-        creatSave.savePlace(inFile, actCreat, testposs = actCreat.shoulders, 
-                            testvecs = [-actCreat.up for _ in range(actCreat.numLimbs)], testlen= actCreat.numLimbs, div=1.)
-        inFile.close()
-        if np.allclose(Pos.getPos(actCreat), pos):
-            print("YAY!!!!!!")
-        else:
-            print("no :(")
-            Pos.printPos(actCreat, Pos.getPos(actCreat))
-        inFile.close()
     elif command == "cycle":
+        #TODO: this
         cycle = walk.genSimpleCycle(actCreat.numLimbs)
         length = np.shape(cycle)[1]
         toplot = np.linalg.norm(cycle, axis=2)

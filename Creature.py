@@ -74,7 +74,7 @@ class Creature:
         self.limbSizes = np.zeros((self.numLimbs, 1))
         self.limbMasses = np.zeros((self.numLimbs, 1))
         self.limbLengths = np.zeros((self.numLimbs, 1))
-        self.limbInwardBodyFrame = np.zeros((self.numLimbs, 3))
+        self.limbOutwardBodyFrame = np.zeros((self.numLimbs, 3))
         self.v = None #this is for visual animation
         #get corners in body frame
         #array 3 rows (x, y, z), 8 columns (8 corners)
@@ -90,13 +90,13 @@ class Creature:
             self.limbMasses[limb.num, 0] = limb.mass
             self.limbLengths[limb.num, 0] = limb.length
             if limb.side == 0:
-                self.limbInwardBodyFrame[limb.num, :] = -x_coord
+                self.limbOutwardBodyFrame[limb.num, :] = x_coord
             elif limb.side == 1:
-                self.limbInwardBodyFrame[limb.num, :] = -z_coord
+                self.limbOutwardBodyFrame[limb.num, :] = z_coord
             elif limb.side == 2:
-                self.limbInwardBodyFrame[limb.num, :] = x_coord
+                self.limbOutwardBodyFrame[limb.num, :] = -x_coord
             elif limb.side == 3:
-                self.limbInwardBodyFrame[limb.num, :] = z_coord
+                self.limbOutwardBodyFrame[limb.num, :] = -z_coord
             
         ###################### shoulder positions of each limb relative to body
         #array of 3 rows (x, y, z), one column for each limb
@@ -173,9 +173,9 @@ class Creature:
         """ find shoulders' positions """
         return np.matmul(self.shouldersBodyFrame, physState.bodyRot) + physState.bodyPos
     
-    def getLimbInward(self, physState):
-        """ find unit vectors pointing inward for each limb """
-        return np.matmul(self.limbInwardBodyFrame, physState.bodyRot)
+    def getLimbOutward(self, physState):
+        """ find unit vectors pointing outward for each limb """
+        return np.matmul(self.limbOutwardBodyFrame, physState.bodyRot)
         
     def getAcc(self, physState, walkForce = None):
         """ return 2 matrices:
@@ -217,7 +217,7 @@ class Creature:
 #        self.logger["up"].addPoint(up.reshape((1,3)))
         limbVecs = limbPos - shoulders
         upness = limbVecs @ up.reshape((3,1)) + self.limbSizes
-        inwardDirection = self.getLimbInward(physState)
+        inwardDirection = -self.getLimbOutward(physState)
         inness = np.sum(limbVecs * inwardDirection, axis = 1, keepdims = True) + self.limbSizes
         bodyLegTouchForce = ((upness > 0) * (inness > 0) * -6000
                              *((upness >= inness) * inness * inwardDirection

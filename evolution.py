@@ -2,7 +2,7 @@
 """
 Evolution for creatures
 Creates new creatures from scratch or based on existing creatures.
-Created on Sat Dec 24 19:06:28 2016
+Created on Sat Dec 24 2016
 
 TODO:
     better way of telling if two limbs should be combined in makeReasonable, and delete smaller one
@@ -114,7 +114,7 @@ def mate(parent1, parent2):
             #print "limbNum, len(limbs):", limbNum, len(limbs)
     return Creature.Creature(bodySize, limbs)
 
-def makeReasonable(creature):
+def _makeReasonable(creature):
     ####################################   make it more reasonable   ##################################
     limbs = creature.limbs[:]
     bodySize = creature.bodySize[:]
@@ -134,6 +134,7 @@ def makeReasonable(creature):
         for limb in limbs: #don't let them be too small, that's unstable
             if limb.size < 0.2:
                 limb.size = 0.2
+                reasonable = False
         for limb in limbs: #check for limbs bigger than their side or their length ####################
             oldSize = limb.size
             limb.size = min([limb.size,sideLengths[limb.side]])
@@ -211,7 +212,8 @@ def newRandomCreature():
     for sideNum in range(4):
         for i in range(random.randint(0,3)):
             limbs.append(newRandomLimb(side = sideNum))
-    return Creature.Creature(size, limbs)
+    return _makeReasonable(Creature.Creature(size, limbs))
+    
 simpleCreature = Creature.Creature(bodySize = [4,1.5,1], limbs = [Creature.Limb(1,.2,2,.3,),
                           Creature.Limb(1,.8,2,.3), Creature.Limb(3,.2,2,.3),
                           Creature.Limb(3,.8,2,.3)], name = "simpleCreature")

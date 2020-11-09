@@ -15,16 +15,17 @@ allLoggers - a dictionary of all current Logger and subclass objects,
     keys = names and values = objects
 tOffset (float) - the time in [s] it takes to start and end the timer. Can 
         be used to offset a measured system time from time.clock().
-"""
-"""
+
 TODO:
     finish developing DictLog
     make a decorator for locking a function (does one exist?)
     make Logs subclasses of a superclass Log
+    make a dedicated timer log with independent variables
     maybe look into using python's logger class
     make it so you can set a recommended view scale
     make it always run in another thread?
     make a reset for all logs in a logger
+    make it possible to create multiple Logs in one line
 """
 import numpy as np
 import os.path
@@ -320,13 +321,23 @@ class Logger:
     
 
 def loadLogger(fileName, loud = False):
-    """returns a log saved by Logger.save() """
+    """returns a log saved by Logger.save() 
+    loud controls whether it prints
+    returns None if file doesn't exist"""
     fileName = os.path.join("logs", fileName + ".creatlog")
     
-    with open(fileName, 'rb') as inFile:
+    try:
+        inFile = open(fileName, 'rb')
         logger = pickle.load(inFile)
+    except:
+        inFile.close()
+        return None
+    inFile.close()
     if loud:
         print("loaded", fileName, ":", logger.printable())
+    
+    global allLoggers
+    allLoggers[self.ownerName] = self
     return logger
     
         
