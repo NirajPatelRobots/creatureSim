@@ -52,7 +52,7 @@ while True:
         while not command == "exit":
             eval(input(">>>"))
     elif command == "new":
-        actCreat = ev.makeReasonable(ev.newRandomCreature())
+        actCreat = ev.newRandomCreature()
         sim.removeCreature(0)
         sim.addCreature(actCreat)
         creatSave.saveCreature(actCreat, fileName = "lastcreat.txt")
@@ -139,6 +139,7 @@ while True:
             actCreat.logger.save(loud = False)
             Pose.printPose(actCreat, Pose.getPose(actCreat, sim.physStates[0]))
     elif command == "cycle":
+        #TODO: this
         cycle = walk.genSimpleCycle(actCreat.numLimbs)
         length = np.shape(cycle)[1]
         toplot = np.linalg.norm(cycle, axis=2)

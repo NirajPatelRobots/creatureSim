@@ -37,6 +37,14 @@ def unit(v):
     """return the normalized vector in the same direction as v with length = 1"""
     return v / np.sum(v**2, axis=1, keepdims=True)
 
+def wrap_to_pi(angles):
+    """given an array of angles, change them to the equivalent angles
+    in the range [-pi pi]. This MUTATES AND RETURNS the angles"""
+    angles = angles % 2*np.pi
+    angles = np.where(angles < -np.pi, angles + 2*np.pi, angles)
+    angles = np.where(angles >  np.pi, angles - 2*np.pi, angles)
+    return angles
+
 def airDrag(vel, strength = 2):
     """ given a points with velocities, find the forces from air drag on those points. 
     vel is a nx3 (x,y,z) array of velocities
