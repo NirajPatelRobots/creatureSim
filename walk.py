@@ -9,10 +9,7 @@ Created May 2017
 rewritten Sept 2020
 
 TODO:
-    better way to find max in makeReasonable
-    automatic testing
-    make variation all gaussian
-    Walkcycle method for changing depth
+    better way to find max in makeReasonable?
     
 @author: niraj
 """
@@ -23,7 +20,7 @@ import pickle
 import time
 from CreatPhysics import wrap_to_pi
 import evolution #for testing
-import logger
+#import logger #for testing
 
 class Walkcycle:
     """represents the walk cycle of a creature. Where its limbs go in order to walk.
@@ -71,6 +68,20 @@ class Walkcycle:
         desiredPose[:,1] += cycleAngle*self._r
         desiredPose[:,0] = np.abs(desiredPose[:,0]) #polar angle is positive
         return desiredPose
+    
+    def setDepth(self, newDepth):
+        """Does what it says it does"""
+        if newDepth > self.depth:
+            a = np.zeros((self.numLimbs, 2, newDepth))
+            b = np.zeros((self.numLimbs, 2, newDepth))
+            a[:,:,0:self.depth] = self._a
+            b[:,:,0:self.depth] = self._b
+        else:
+            a = self._a[:,:,0:newDepth]
+            b = self._b[:,:,0:newDepth]
+        self._a = a
+        self._b = b
+        self.depth = newDepth
         
     def variation(self, courseChange, fineChange):
         """return a walkcycle that is similar to this one.
@@ -89,18 +100,14 @@ class Walkcycle:
         m = (fineChange - courseChange)/(10 - 1)
         c = courseChange - m
         
-        change = 0.1/self.depth*np.random.random(size=(self.numLimbs,2,self.depth))
+        change = 0.1/self.depth*np.random.normal(size=(self.numLimbs,2,self.depth))
         change *= (c*np.ones(self.depth) + m*np.arange(1,self.depth+1)).reshape((1,1,self.depth))
         a += change
-        change = 0.1/self.depth*np.random.random(size=(self.numLimbs,2,self.depth))
+        change = 0.1/self.depth*np.random.normal(size=(self.numLimbs,2,self.depth))
         change *= (c*np.ones(self.depth) + m*np.arange(1,self.depth+1)).reshape((1,1,self.depth))
         b += change
         
-        a0 += 0.1*(np.random.random(size=(self.numLimbs, 2)) - 0.5)
-#        if np.random.random() * courseChange > 0.8:
-#            r = np.random.randint(-1,2)
-#        else:
-#            r = self._r
+        a0 += 0.1*(np.random.normal(size=(self.numLimbs, 2)) - 0.5)
         r = np.where(np.random.random(self.numLimbs) * courseChange > 0.5, 
                      np.random.randint(-1,2, size = self.numLimbs), self._r)
         cycle = Walkcycle(self.numLimbs, a0, a, b, r, self.depth)
@@ -128,17 +135,7 @@ def loadWalkcycle(fileName, newDepth=None):
         print("Couldn't load", fileName)
         return None
     if not newDepth is None and not newDepth == cycle.depth:
-        if newDepth > cycle.depth:
-            a = np.zeros((cycle.numLimbs, 2, newDepth))
-            b = np.zeros((cycle.numLimbs, 2, newDepth))
-            a[:,:,0:cycle.depth] = cycle._a
-            b[:,:,0:cycle.depth] = cycle._b
-        else:
-            a = cycle._a[:,:,0:newDepth]
-            b = cycle._b[:,:,0:newDepth]
-        cycle._a = a
-        cycle._b = b
-        cycle.depth = newDepth
+        cycle.setDepth(newDepth)
     return cycle
 
 def genSimpleCycle(creat, depth):
@@ -152,7 +149,7 @@ def genSimpleCycle(creat, depth):
     a = np.zeros((creat.numLimbs, 2, depth))
     b = np.zeros((creat.numLimbs, 2, depth))
     #one full azimuthal rotation (r = +-1). Direction depends on which side of creature.
-    r = (2*np.logical_or(creat.limbSides == 0, creat.limbSides == 1) - 1
+    r = (2*np.logical_or(creat.limbSides == 2, creat.limbSides == 3) - 1
                   ).reshape(creat.numLimbs)
     return Walkcycle(creat.numLimbs, a0, a, b, r, depth)
 
@@ -160,11 +157,17 @@ def compareWalkCycles(c1, c2):
     """Returns a number > 0 that represents how similar two walk cycles are to each other.
     Commutative. Absolute number doesn't matter, only comparisons relative to other cycles."""
     #TODO: this 
+    # https://en.wikipedia.org/wiki/Great-circle_distance
+    
+    
     
 def reverseWalkcycle(cycle):
     """Does your walkcycle go backwards? 
-    This fcn returns the same walkcycle but in the opposite direction."""
-    #TODO: this
+    This fcn mutates the cycle input to be in the opposite direction.
+    Doesn't return anything"""
+    cycle._r *= -1
+    cycle._a *= -1
+    
 
 ############# internal use functions
 def _makeReasonable(cycle):
@@ -228,7 +231,7 @@ def walkcycleTest(loud = False):
     print("Walkcycle Test 2")
     #Test 2: test saving and loading
     for creatNum in range(numCreatures):
-        print("Creature", str(creatNum+1)+'/'+str(numCreatures))
+        print("Creature", str(creatNum+1)+'/'+str(numCreatures), end="\n\t")
         creat = evolution.newRandomCreature()
         depth = random.randint(3, 10)
         cycle = genSimpleCycle(creat, depth)

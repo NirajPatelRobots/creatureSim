@@ -18,8 +18,6 @@ Requires Cython 0.29 or newer (for now)
 - A *walkCycle* is a repeating list of poses that the creature uses to move
 
 ## Major Tasks TODO
-- finish code for generating (and testing) walkcycles
-- decision making functionality
 - learning algorithm for walkCycles
 - speed up physics
 - consistently measure execution times

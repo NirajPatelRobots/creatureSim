@@ -207,7 +207,7 @@ def _makeReasonable(creature):
     return Creature.Creature(bodySize, limbs)
 
 def newRandomCreature():
-    size = [random.random()*3 + .4, random.random()*3 + .4, random.random()*3 + .4]
+    size = [random.random()*3 + .4, random.random()*2 + .4, random.random()*3 + .4]
     limbs = []
     for sideNum in range(4):
         for i in range(random.randint(0,3)):

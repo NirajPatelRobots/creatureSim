@@ -44,7 +44,7 @@ def getPose(creature, physState, includeBodyLimbVecs = False):
     else:
         return pose
         
-def printPose(creat, pose, digits = 4):
+def printPose(pose, digits = 4):
     print("----------- Pose -------------------------")
     with np.printoptions(precision=digits):
         print("Out:", pose[:,0])
@@ -54,14 +54,14 @@ def calcDesiredPoseForce(creature, bodyLimbVecs, desiredPose):
     """given a creature, its current body limbVecs, and its desired position,
     return desired cartesian force to move it to desiredPose in body coordinates"""
     error = poseLimbVecs(creature, desiredPose) - bodyLimbVecs
-    kp = 100.
+    kp = 200.
     return kp*error
     
 def constrainWalkForce(creature, walkForce, bodyLimbVecs):
     """constrain a walkForce to what a creature can produce.
     maximum magnitude and doesn't allow leg to stretch and compression
     returns the constrained force in body coordinates"""
-    maxForce = 8000.
+    maxForce = 2.0e4 * creature.limbSizes
     radialDirection = bodyLimbVecs / creature.limbLengths
     walkForce -= np.sum(walkForce * radialDirection, axis = 1, keepdims=True) * radialDirection
     magnitude = np.sum(walkForce**2, axis=1, keepdims=True)

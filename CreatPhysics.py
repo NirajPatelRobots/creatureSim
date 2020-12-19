@@ -10,9 +10,7 @@ TODO:
     make sure it doesn't make unnecessary copies
     maybe use masked arrays for faster calculations? Especially in floor force
     pointsRepel is slow for small numbers of repelling points
-    get rid of rotationmatrix
-    damp leg oscilalations?
-    body as impenetrable surfaces
+    body as list of surfaces
     I don't think angvel_to_rotmat works for multiple rotmats
     maybe np.where speeds up some stuff
 
@@ -54,7 +52,7 @@ def airDrag(vel, strength = 2):
     return force
 
 def interactFloor(pos, size, velocity, force = None, n = None, strength = 6000,
-                  kinetic_fric = 0.4, static_fric = 0.6):
+                  kinetic_fric = 0.4, static_fric = 0.8):
     """given a set of points, make them not fall through the floor and get floor friction.
     
     pos is nx3 (x,y,z) points, size is the radius of those points.

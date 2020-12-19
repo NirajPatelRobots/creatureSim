@@ -13,7 +13,6 @@ import numpy as np
 import os.path
 import pyximport
 pyximport.install(language_level = 3)
-import Creature
 
 csavepath = os.path.dirname(__file__) + os.sep + "creatures"#"C:/Users/niraj/Documents/programs/creatureSim/creatures"
 
@@ -60,6 +59,7 @@ def saveCreature(creature, fileName = None): #saves a creature to a file
     inFile.close()
 
 def loadCreature(fileName):
+    import Creature 
     if fileName == "exit":
         return
     if not fileName[-6:] == ".creat":

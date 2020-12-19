@@ -6,13 +6,12 @@ Requires VPython 7.5 or newer (https://vpython.org/)
 Created Dec 2019 @author: Niraj
 
 TODO:
-    add a second light source so it isn't so dark on the back
     be more serious about error checking filenames (pretty easy)
-    in animate_main, way to view information (active logs, annotations, files)
     make it easier to animate a single arrow/sphere from a row vector? (so you don't have to reshape to 2D)
     error checking for loading logs/ annotations
-    way to remove annotations
+    ways to add/remove annotations
     make creat.v destructors so creature animation gets deleted on error
+    make saved animations have time data
     BUG a 1 second animation had a time: 5.00 tag in the bottom
 
 """
@@ -66,6 +65,7 @@ def vCreateDisplay(creat): #make visualization possible
     v.scene.width = 800
     v.scene.height = 800
     v.scene.range = 6
+    v.scene.lights[1].color=v.color.gray(0.6) #improve some of the lighting
     creat.v = AnimCreat(creat)
 
     #time label
@@ -172,16 +172,12 @@ def animate_main(creature, speed = None):
         vCreateDisplay(creature)
     annotations = []
     
-    try:
-        actLogger = logger.loadLogger(creature.name)
-    except:
-        print("Couldn't load logger", creature.name)
-        actLogger = None
-    else:
-#        annotations.append(TestArrows(actLogger["limbPos"],
-#                                      actLogger["walkForce"], scale = 0.03,
-#                                        color = v.color.green))
-#        annotations.append(TestSpheres(actLogger["desiredPoseCart"], color = v.color.red))
+    actLogger = logger.loadLogger(creature.name)
+    if not actLogger is None:
+        annotations.append(TestArrows(actLogger["limbPos"],
+                                      actLogger["walkForce"], scale = 0.1,
+                                        color = v.color.green))
+        annotations.append(TestSpheres(actLogger["desiredPoseCart"], color = v.color.red, radius = 0.1))
         pass
     while True:
         args = input(">>>Enter animate (default), speed, load, log, arrows, spheres, or exit: ").split()
