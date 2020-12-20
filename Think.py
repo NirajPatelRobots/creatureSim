@@ -122,6 +122,7 @@ class MotionControl:
         if self.desiredPose is None:
             desiredPoseCart = np.zeros((self.brain.creat.numLimbs,3))
             self.brain.creat.logger["walkForce"].addPoint(np.zeros((self.brain.creat.numLimbs,3)))
+            print("no desired pose")
         else:
             desiredPoseCart = Pose.poseToPhysState(self.brain.creat,
                             self.brain._input["physState"], self.desiredPose).limbPos

@@ -7,6 +7,7 @@ TODO:
     associate runs with creatures somehow
     make the saved state more like the physState object
     safer file opening and closing
+    binary instead of ascii?
 """
 
 import numpy as np
@@ -16,34 +17,36 @@ pyximport.install(language_level = 3)
 
 csavepath = os.path.dirname(__file__) + os.sep + "creatures"#"C:/Users/niraj/Documents/programs/creatureSim/creatures"
 
-def newFile(fileName = None, askForFileName = False):
-    """creates a file for saving with savePlace.
-    askForFileName is True if the system should prompt for filename.
+def loadSimDataFile(fileName = None):
+    """ returns a file for saving with savePlace. Default is 'recent'.
+    Creates if it doesn't exist, appends otherwise.
     fileName is the name of the file"""
-    if askForFileName:
-        fileName = input("Enter filename for movement data save: ")+".txt"
-    elif fileName is None:
-        fileName = "recent.txt"
-    if fileName == ".txt":
-        fileName = "recent.txt"  # the default
-    if fileName == "exit.txt":
-        return (None, None)
-    fileName = "animations/" + fileName
-    inFile = open(fileName, 'w')
-    inFile.write("#pos (x y z) axis (x y z) up (x y z) limb positions (x y z)\n")
-    return inFile, fileName
+    if fileName is None or fileName == "":
+        fileName = "recent"
+    fileName = "animations/" + fileName + ".txt"
+    outFile = open(fileName, 'a')
+    outFile.write("#pos (x y z) axis (x y z) up (x y z) limb positions (x y z)...\n")
+    return outFile
 
-def savePlace(inFile, physState):
+def savePlace(outFile, physState):
+    """saves a physState to a file opened by loadSimDataFile"""
     for i in range(3):
-        inFile.write(str(physState.bodyPos[i])+' ')
+        outFile.write(str(physState.bodyPos[i])+' ')
     for i in range(3):
-        inFile.write(str(physState.bodyRot[0, i]) + ' ')
+        outFile.write(str(physState.bodyRot[0, i]) + ' ')
     for i in range(3):
-        inFile.write(str(physState.bodyRot[1, i]) + ' ')
+        outFile.write(str(physState.bodyRot[1, i]) + ' ')
     for limbNum in range(physState.numLimbs):
         for i in range(3):
-            inFile.write(str(physState.limbPos[limbNum, i]) + ' ') 
-    inFile.write('\n')
+            outFile.write(str(physState.limbPos[limbNum, i]) + ' ') 
+    outFile.write('\n')
+
+def deleteSimDataFile(fileName = None):
+    if fileName is None or fileName == "":
+        fileName = "recent"
+    fileName = "animations/" + fileName + ".txt"
+    if os.path.exists(fileName):
+        os.remove(fileName)
 
 def saveCreature(creature, fileName = None): #saves a creature to a file
     if fileName is None:
@@ -54,9 +57,9 @@ def saveCreature(creature, fileName = None): #saves a creature to a file
         fileName = "recent.creat"
     if not fileName[-6:] == ".creat":
         fileName += ".creat"
-    inFile = open(os.path.join(csavepath,fileName), 'w')
-    inFile.write(creature.printable())
-    inFile.close()
+    outFile = open(os.path.join(csavepath,fileName), 'w')
+    outFile.write(creature.printable())
+    outFile.close()
 
 def loadCreature(fileName):
     import Creature 

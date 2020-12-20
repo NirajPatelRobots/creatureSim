@@ -12,14 +12,11 @@ TODO:
     ways to add/remove annotations
     make creat.v destructors so creature animation gets deleted on error
     make saved animations have time data
+    I programed most of the animate function when I was really bad at programming, redo that
     BUG a 1 second animation had a time: 5.00 tag in the bottom
 
 """
 import vpython as v
-import importlib
-import pyximport
-pyximport.install(language_level = 3)
-import Creature
 import numpy as np
 import logger
 import simulator

@@ -17,8 +17,8 @@ TODO:
 
 import numpy as np
 import time
-import pyximport
-pyximport.install(language_level = 3)
+#import pyximport #this is if we want to try to use cython
+#pyximport.install(language_level = 3)
 import CreatPhysics as phys
 import simulator
 import logger

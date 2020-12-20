@@ -14,27 +14,16 @@ TODO:
 """
 
 
-import vpython as v
-import time
 import sys
-import numpy as np
-import matplotlib.pyplot as plt
-import importlib
-import pyximport
-pyximport.install(language_level = 3)
+#import pyximport #this is if we want to try to use cython
+#pyximport.install(language_level = 3)
 
 import simulator
 import Creature
 import creatSave
-importlib.reload(creatSave)
 import evolution as ev
-importlib.reload(ev)
-#import walk
-#importlib.reload(walk)
 import Pose
-importlib.reload(Pose)
 import animate
-importlib.reload(animate)
 
 actCreat = ev.simpleCreature  #start with the simple one
 sim = simulator.Simulator()

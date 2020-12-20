@@ -148,7 +148,7 @@ class Simulator:
         self._integratorDeltaStates = []
         self.brains = []
         self.numCreatures = 0
-        self.reset()
+        self.t = 0.0
     
     def addCreature(self, creature):
         """add a creature to the list of creatures in the simulator.  """
@@ -177,7 +177,7 @@ class Simulator:
         runtime is in seconds, savePlaces is to save creature locations,
         printProgres is true for printing a progress bar."""
         if savePlaces:
-            inFile = creatSave.newFile()[0] #technically could leak but ¯\_(ツ)_/¯
+            inFile = creatSave.loadSimDataFile() #technically could leak but ¯\_(ツ)_/¯
         startTime = time.time()
         countmax = int(runtime/self._h)
         for counter in range(countmax):
@@ -199,6 +199,7 @@ class Simulator:
         for i in range(self.numCreatures):
             self.brains[i].reset()
             self.creatures[i].logger.clearAll()
+        creatSave.deleteSimDataFile()
     
     ################## internal use methods
     
