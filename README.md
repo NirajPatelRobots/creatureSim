@@ -9,7 +9,6 @@ Requires numpy 1.17 or newer (honestly, older probably works too)
 
 Displaying animations requires [VPython](https://vpython.org/) 7.5 or newer
 
-Requires Cython 0.29 or newer (for now)
 
 ## Concepts
 - A *creature* is an object that can move.
@@ -18,8 +17,6 @@ Requires Cython 0.29 or newer (for now)
 - A *walkCycle* is a repeating list of poses that the creature uses to move
 
 ## Major Tasks TODO
-- finish code for generating (and testing) walkcycles
-- decision making functionality
 - learning algorithm for walkCycles
 - speed up physics
 - consistently measure execution times

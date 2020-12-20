@@ -22,10 +22,8 @@ TODO:
     make Logs subclasses of a superclass Log
     make a dedicated timer log with independent variables
     maybe look into using python's logger class
-    make it so you can set a recommended view scale
+    make it so you can set a recommended view scale for the data
     make it always run in another thread?
-    make a reset for all logs in a logger
-    make it possible to create multiple Logs in one line
 """
 import numpy as np
 import os.path
@@ -33,6 +31,7 @@ import pickle
 import time
 import threading
 from collections import defaultdict
+import types
 
 allEnabled = True
 allTimingEnabled = True
@@ -133,7 +132,7 @@ class ArrayLog:
         """
         p = ("Logged array " + self.name + "\n"
              + "\tPoint shape: "+str(self._shape[:-1])
-             + "  Number of points: "+str(self._shape[-1]) + "\n")
+             + "  Number of points: "+str(self.d.shape[-1]) + "\n")
         if self.t.size > 0:
             p += ("Simulation time: " + str(self.t.size) + " points, range "
                   + str(np.min(self.t)) + " to " + str(np.max(self.t)) + "\n")
@@ -153,7 +152,11 @@ class ArrayLog:
         """ removes all the logged data from a ArrayLog.
         Does not change the time logging settings or point shape.
         """
-        self.d = np.array(self._shape, dtype = self._ptdtype)
+        self.lock.acquire(True)
+        self.d = np.zeros(self._shape, dtype = self._ptdtype)
+        self.t = np.array([])
+        self.tirl = np.array([])
+        self.lock.release()
     
     def __getstate__(self):
         """ method used by pickle. removes the lock, which can't be pickled."""
@@ -200,7 +203,7 @@ class DictLog:
             it doesn't exist.
         value is the new value for self.d[key]. Its behavior is governed by behavior.
         behavior - can be one of:
-            'append': self.d[key].append(value)
+            'append': self.d[key].append(value) (it's a np array, not a list though)
             'add': self.d[key] += value
             'mult': self.d[key] *= value
         """
@@ -210,7 +213,7 @@ class DictLog:
             t = threading.Thread(target = self._addPointThread, args = (key, value, behavior))
             """throw the thread into the wind.
             You do not see where it lands. The reference is lost when this method returns.
-            But as you toss it into the air and blow to help it catch the breeze,
+            But as you toss it into the air and blow gently to help it catch the breeze,
             you see it float, as if weightless, searching for its own free patch of your CPU.
             Before you turn and exit this method, a peaceful feeling washes over you
             which lasts for the rest of your day.
@@ -235,13 +238,17 @@ class DictLog:
         """ returns a string describing this DictLog.
         if printData is True, it will also include the value of the logged data d.
         """
-        p = ("Logged dict " + self.name + "\n"
-             + "\tNumber of Keys: "+str(len(self.d.keys()))
-             + "  Number of points: "+str(len(self.d.values())) + "\n")
-        if printData:
-            p += "\tData:\n\t" + str(self.d).replace("\n", "\n\t")
-        p.rstrip()
-        return p
+        try:
+            p = ("Logged dict " + self.name + "\n"
+                 + "\tNumber of Keys: "+str(len(self.d.keys()))
+                 + "  Number of points: "+str(len(self.d.values())) + "\n")
+            if printData:
+                p += "\tData:\n\t" + str(self.d).replace("\n", "\n\t")
+            p.rstrip()
+            return p
+        except:
+            print("Couldn't print log", self.name)
+            return ""
     
     def __getitem__(self, index):
         return self.d[index]
@@ -282,12 +289,17 @@ class Logger:
         
     def newArrayLog(self, logName, enabled = True, timingEnabled = False,
                     shape = None, dtype = None):
-        """ Creates a new ArrayLog named logName. 
+        """ Creates a new ArrayLog named logName.
+        If logName is a list, it creates one for each name in the list.
         Completely overrides any existing log with that name.
         """
-        #print(self.ownerName, "making ArrayLog", logName)
-        self.l[logName] = ArrayLog(logName, self.ownerName, enabled, 
-                                   timingEnabled, shape, dtype)
+        if isinstance(logName, str): #if this is a string, not a list of strings
+            logNames = [logName]
+        else:
+            logNames = logName
+        for name in logNames:
+            self.l[name] = ArrayLog(name, self.ownerName, enabled,
+                                    timingEnabled, shape, dtype)
         
     def newDictLog(self, logName, enabled = True, default = list,
                  initdata = None):
@@ -296,6 +308,10 @@ class Logger:
         """
         self.l[logName] = DictLog(logName, self.ownerName, enabled,
                                   default, initdata)
+    
+    def clearAll(self):
+        for log in self.l.values():
+            log.clear()
             
     def save(self, fileName = None, loud = False):
         """ save the Logger data to a pickle file
@@ -325,19 +341,19 @@ def loadLogger(fileName, loud = False):
     loud controls whether it prints
     returns None if file doesn't exist"""
     fileName = os.path.join("logs", fileName + ".creatlog")
-    
     try:
         inFile = open(fileName, 'rb')
         logger = pickle.load(inFile)
     except:
-        inFile.close()
+        if loud:
+            print("Couldn't load", fileName)
         return None
     inFile.close()
     if loud:
         print("loaded", fileName, ":", logger.printable())
     
     global allLoggers
-    allLoggers[self.ownerName] = self
+    allLoggers[logger.ownerName] = logger
     return logger
     
         

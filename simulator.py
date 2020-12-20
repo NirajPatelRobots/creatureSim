@@ -6,18 +6,19 @@ Created May 2020 @author: Niraj
 
 TODO:
     add creature interaction
-    add creature thinking and larger-scale state
-    multithreading?
-    I should maybe replace the parallel lists in Simulator with a class?
+    multithreading
+    Can save filenames differently
+    I should maybe replace the parallel lists (creature, brain, physState)
+        in Simulator with a class?
 """
 
 import numpy as np
 import time
 import CreatPhysics as phys
-import Pose
+import creatSave
 
-h = 1e-3 #timestep for physics update
 pupdatetime = 0
+h = 1e-3
 
 class CreaturePhysState:
     """ A class for the physical state of a creature.
@@ -80,18 +81,17 @@ class CreaturePhysState:
         self._angvel = np.zeros((self._nRot, 3))
         self.isDelta = isDelta
     
-    def set_from_motion(self, oldState, linAcc, angAcc, div = 1.):
+    def set_from_motion(self, oldState, linAcc, angAcc, h):
         """given that a creature is moving from oldState
         and has calculated linAcc (linear acceleration as nx3) and
         angAcc (angular acceleration as mx3), set self to the state after movement.
-        div is for Runge-Kutta calculations.
-        h is simulator.h
-        This is designed so oldState can be self and it'll work.
+        h is step size, simulator.h
+        This is designed so oldState can be the same thing as self and it'll work.
         """
-        self.pos = oldState.pos + oldState.vel * h / div
-        self.vel = oldState.vel + linAcc * h / div
-        self.rotation = oldState.rotation @ phys.angvel_to_rotmat(oldState.angvel * h / div)
-        self.angvel = oldState.angvel + angAcc * h / div
+        self.pos = oldState.pos + oldState.vel * h
+        self.vel = oldState.vel + linAcc * h
+        self.rotation = oldState.rotation @ phys.angvel_to_rotmat(oldState.angvel * h)
+        self.angvel = oldState.angvel + angAcc * h
     
     def add(self, other):
         """adds a delta state to this state."""
@@ -115,12 +115,12 @@ class CreaturePhysState:
         self.rotation *= 0
         self.angvel *= 0
         
-def calc_deltaState(oldState, linAcc, angAcc, deltaState):
+def calc_deltaState(oldState, linAcc, angAcc, deltaState, h):
     """given that a creature is moving from oldState
     and has calculated linAcc (linear acceleration as nx3) and
     angAcc (angular acceleration as mx3),
     set deltaState for runge-kutta final average step.
-    h is simulator.h
+    h is timestep, simulator.h
     """
     deltaState.pos += oldState.vel * h
     deltaState.vel += linAcc * h
@@ -146,71 +146,102 @@ class Simulator:
         self._h = 1e-3
         self._integratorStates = []
         self._integratorDeltaStates = []
-        self.desiredPoses = []
-        self.t = 0.
+        self.brains = []
+        self.numCreatures = 0
+        self.t = 0.0
     
     def addCreature(self, creature):
         """add a creature to the list of creatures in the simulator.  """
+        import Think
         self.creatures.append(creature)
         self.physStates.append(creature.newPhysState())
-        self.desiredPoses.append(None)
+        self.brains.append(Think.Brain(creature, self._h))
         self._integratorStates.append(creature.newPhysState())
         self._integratorDeltaStates.append(CreaturePhysState(
                 stateToCopy = self._integratorStates[-1], isDelta = True))
+        self.numCreatures += 1
     
     def removeCreature(self, index):
-        del self.creatures[index]
-        del self.physStates[index]
-        del self._integratorStates[index]
-        del self._integratorDeltaStates[index]
+        if index < self.numCreatures:
+            del self.creatures[index]
+            del self.physStates[index]
+            del self.brains[index]
+            del self._integratorStates[index]
+            del self._integratorDeltaStates[index]
+            self.numCreatures -= 1
+        else:
+            print("WARNING: Tried to remove a creature that doesn't exist")
     
-    def pUpdate(self):
+    def run(self, runtime = 5.0, savePlaces = True, printProgress = True):
+        """runs the simulation.
+        runtime is in seconds, savePlaces is to save creature locations,
+        printProgres is true for printing a progress bar."""
+        if savePlaces:
+            inFile = creatSave.loadSimDataFile() #technically could leak but ¯\_(ツ)_/¯
+        startTime = time.time()
+        countmax = int(runtime/self._h)
+        for counter in range(countmax):
+            self._pUpdate()
+            if savePlaces:
+                creatSave.savePlace(inFile, self.physStates[0])
+            if printProgress and int(counter % (countmax/10)) == 0:
+                print("\r\t"+ str(int((float(counter)/countmax)*100)) +"%", end = '') #FANCY PERCENTS
+        if savePlaces:
+            inFile.close()
+            self.creatures[0].logger.save(loud = False)
+        if printProgress:
+            print("\rTook", round(time.time() - startTime, 3), "seconds to run",
+                  countmax * self._h, "seconds of simulation.")
+    
+    def reset(self):
+        """resets creature brains and loggers, but doesn't reset positions."""
+        self.t = 0.0
+        for i in range(self.numCreatures):
+            self.brains[i].reset()
+            self.creatures[i].logger.clearAll()
+        creatSave.deleteSimDataFile()
+    
+    ################## internal use methods
+    
+    def _pUpdate(self):
         """ uses 4th order Runge-Kutta integration method to update the physics"""
-        startTime = time.clock()
-        for i in range(len(self.creatures)):
+        startTime = time.process_time()
+        for i in range(self.numCreatures):
             self.creatures[i].logger.t = self.t
-            #first, creature chooses the force it wants
-            walkForce = Pose.calcWalkForce(self.creatures[i], self.physStates[i],
-                                           self.desiredPoses[i])
-            ############## LOGGGING
-#            if self.desiredPoses[i] is None:
-#                desiredPoseCart = self.physStates[i].limbPos
-#            else:
-#                desiredPoseCart = Pose.poseToPhysState(self.creatures[i],
-#                                self.physStates[i], self.desiredPoses[i]).limbPos
-#            self.creatures[i].logger["desiredPoseCart"].addPoint(desiredPoseCart)
-#            if walkForce is None:
-#                self.creatures[i].logger["walkForce"].addPoint(np.zeros((self.creatures[i].numLimbs,3)))
-#            else:
-#                self.creatures[i].logger["walkForce"].addPoint(walkForce)
-            ################## END LOGGING
+            #add brain inputs
+            self.brains[i].setInput("physState", self.physStates[i])
+            
+            self.brains[i].think()
+            self.brains[i].simTime = self.t
+            
             #then calculate physics
+            walkForce = self.brains[i].getOutput("walkForce")
             self._integratorDeltaStates[i].set_to_zero()
             #k1
             oldState = self.physStates[i]
             deltaState = self._integratorDeltaStates[i]
             linAcc, angAcc = self.creatures[i].getAcc(oldState, walkForce = walkForce)
-            calc_deltaState(oldState, linAcc, angAcc, deltaState)
+            calc_deltaState(oldState, linAcc, angAcc, deltaState, self._h)
             self._integratorStates[i].set_from_motion(
-                    oldState, linAcc, angAcc, div = 1.)
+                    oldState, linAcc, angAcc, self._h)
             #k2
             oldState = self._integratorStates[i]
             linAcc, angAcc = self.creatures[i].getAcc(oldState, walkForce = walkForce)
-            calc_deltaState(oldState, linAcc, angAcc, deltaState)
+            calc_deltaState(oldState, linAcc, angAcc, deltaState, self._h)
             self._integratorStates[i].set_from_motion(
-                    oldState, linAcc, angAcc, div = 2.)
+                    oldState, linAcc, angAcc, self._h / 2)
             #k3
             linAcc, angAcc = self.creatures[i].getAcc(oldState, walkForce = walkForce)
-            calc_deltaState(oldState, linAcc, angAcc, deltaState)
+            calc_deltaState(oldState, linAcc, angAcc, deltaState, self._h)
             self._integratorStates[i].set_from_motion(
-                    oldState, linAcc, angAcc, div = 2.)
+                    oldState, linAcc, angAcc, self._h / 2)
             #k4
             linAcc, angAcc = self.creatures[i].getAcc(oldState, walkForce = walkForce)
-            calc_deltaState(oldState, linAcc, angAcc, deltaState)
+            calc_deltaState(oldState, linAcc, angAcc, deltaState, self._h)
             
             deltaState /= 6
             
             self.physStates[i].add(deltaState)
         self.t += self.h
         global pupdatetime
-        pupdatetime += time.clock() - startTime
+        pupdatetime += time.process_time() - startTime

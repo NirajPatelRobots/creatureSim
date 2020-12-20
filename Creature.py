@@ -17,8 +17,8 @@ TODO:
 
 import numpy as np
 import time
-import pyximport
-pyximport.install(language_level = 3)
+#import pyximport #this is if we want to try to use cython
+#pyximport.install(language_level = 3)
 import CreatPhysics as phys
 import simulator
 import logger
@@ -112,27 +112,17 @@ class Creature:
                                             (self.bodySize[1] * z_coord))
         
         #   Logging
-        self.logger = logger.Logger(self.name)
-        self.logger.newArrayLog("up", shape = (1, 3))
-        self.logger.newArrayLog("limbPos", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("shoulders", shape = self.shouldersBodyFrame.shape)
-        self.logger.newArrayLog("corners", shape = (8, 3))
-        self.logger.newArrayLog("bodyVel", shape = (1, 3))
-        self.logger.newArrayLog("angVel", shape = (1, 3))
-        self.logger.newArrayLog("angAcc", shape = (1, 3))
-        self.logger.newArrayLog("force", shape = (1,3))
-        self.logger.newArrayLog("cornersForce", shape = (8, 3))
-        self.logger.newArrayLog("walkForce", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("bodyConnectForce", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("pointsRepel", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("limbForce", shape = (self.numLimbs, 3)) 
-        self.logger.newArrayLog("floorLimbForce", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("limbAirDrag", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("torque", shape = (1,3))
-        self.logger.newArrayLog("bodyLegTorque", shape = (self.numLimbs,3))
-        self.logger.newArrayLog("cornersTorque", shape = (8, 3))
-        self.logger.newArrayLog("bodyLegTouchForce", shape = (self.numLimbs, 3))
-        self.logger.newArrayLog("desiredPoseCart", shape = (self.numLimbs, 3))
+        self.logger = logger.loadLogger(self.name)
+        if self.logger is None:
+            self.logger = logger.Logger(self.name)
+            self.logger.newArrayLog(["up", "bodyVel", "angVel","angAcc", "force", "torque"],
+                                     shape = (1, 3))
+            self.logger.newArrayLog(["limbPos", "shoulders","walkForce", "bodyConnectForce",
+                                     "pointsRepel", "limbForce", "floorLimbForce", "limbAirDrag",
+                                     "bodyLegTorque", "bodyLegTouchForce", "desiredPoseCart"],
+                                     shape = (self.numLimbs, 3))
+            self.logger.newArrayLog(["corners", "cornersForce", "cornersTorque"],
+                                    shape = (8, 3))
         
     def printable(self):
         text = ("Creature "+ hex(id(self)) + (' "'+self.name+'"\n' if self.name else "\n") +
@@ -161,7 +151,7 @@ class Creature:
         for i in range(8):
             if corners[i,1] < lowest: #bottom of limb
                 lowest = corners[i,1]
-        startPos = (lowest - 0.1) * y_coord
+        startPos = lowest * y_coord
         physState.pos -= startPos
         return physState
     
@@ -194,7 +184,7 @@ class Creature:
         limbVel = physState.limbVel
         shoulders = self.getShoulders(physState)
 #        self.logger["shoulders"].addPoint(shoulders)
-#        self.logger["limbPos"].addPoint(limbPos)
+        self.logger["limbPos"].addPoint(limbPos)
 #        self.logger["bodyVel"].addPoint(bodyVel)
         force = -GRAVITY_STRENGTH * self.mass * y_coord
         
