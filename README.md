@@ -5,9 +5,13 @@ Physics simulation of creatures interacting with environment
 1. Download the repo
 2. Run main.py
 
-Requires numpy 1.17 or newer (honestly, older probably works too)
+Requires python 3.5 or newer.
 
-Displaying animations requires [VPython](https://vpython.org/) 7.5 or newer
+Requires numpy 1.17 or newer (honestly, older probably works too).
+
+Displaying animations requires [VPython](https://vpython.org/) 7.5 or newer.
+
+Saving animations as GIFs requires Pillow 7.0 or newer and Vpython.
 
 
 ## Concepts

@@ -23,7 +23,7 @@ def loadSimDataFile(fileName = None):
     fileName is the name of the file"""
     if fileName is None or fileName == "":
         fileName = "recent"
-    fileName = "animations/" + fileName + ".txt"
+    fileName = "animations/" + fileName + ".anim"
     outFile = open(fileName, 'a')
     outFile.write("#pos (x y z) axis (x y z) up (x y z) limb positions (x y z)...\n")
     return outFile
@@ -44,9 +44,12 @@ def savePlace(outFile, physState):
 def deleteSimDataFile(fileName = None):
     if fileName is None or fileName == "":
         fileName = "recent"
-    fileName = "animations/" + fileName + ".txt"
+    fileName = "animations/" + fileName + ".anim"
     if os.path.exists(fileName):
-        os.remove(fileName)
+        try:
+            os.remove(fileName)
+        except:
+            print("Couldn't delete sim data file", fileName)
 
 def saveCreature(creature, fileName = None): #saves a creature to a file
     if fileName is None:
