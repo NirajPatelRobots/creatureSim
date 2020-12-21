@@ -119,15 +119,14 @@ class MotionControl:
             self.brain._output["walkForce"] = Pose.calcWalkForce(self.brain.creat,
                        self.brain._input["physState"], self.desiredPose)
         ############## LOGGING
-        if self.desiredPose is None:
-            desiredPoseCart = np.zeros((self.brain.creat.numLimbs,3))
-            self.brain.creat.logger["walkForce"].addPoint(np.zeros((self.brain.creat.numLimbs,3)))
-            print("no desired pose")
-        else:
-            desiredPoseCart = Pose.poseToPhysState(self.brain.creat,
-                            self.brain._input["physState"], self.desiredPose).limbPos
-            self.brain.creat.logger["walkForce"].addPoint(self.brain._output["walkForce"])
-        self.brain.creat.logger["desiredPoseCart"].addPoint(desiredPoseCart)
+#        if self.desiredPose is None:
+#            desiredPoseCart = np.zeros((self.brain.creat.numLimbs,3))
+#            self.brain.creat.logger["walkForce"].addPoint(np.zeros((self.brain.creat.numLimbs,3)))
+#        else:
+#            desiredPoseCart = Pose.poseToPhysState(self.brain.creat,
+#                            self.brain._input["physState"], self.desiredPose).limbPos
+#            self.brain.creat.logger["walkForce"].addPoint(self.brain._output["walkForce"])
+#        self.brain.creat.logger["desiredPoseCart"].addPoint(desiredPoseCart)
         ################## END LOGGING
     
     @property

@@ -75,12 +75,16 @@ def vCreateDisplay(creat): #make visualization possible
     if floor is None:
         floor = v.box(length = 10,width = 10, height = 0.01, color = v.color.green)
 
-def animate(creature, fileName, speed=20, annotations = []): #make an animation, can't be done at the same time as real physics
-    #Basically loads the saved creature movements, then moves it through them again, without physics, with visual
+def animate(creature, fileName, speed=20, annotations = [], frameSave = None): 
+    """make an animation, can't be done at the same time as real physics.
+    Loads the saved creature movements, then moves it through them again, without physics, with visual.
+    creature is the creature, fileName is the saved run file, speed is run speed,
+    annotations is a list of testSpheres and testArrows.
+    frameSave is None (default) for no gif saving, or a filename for gif saving"""
     print("Starting animation at speed", speed)
     
-    v.sleep(1) #time for the file to be saved before loading
-    if not fileName[-4:] == ".txt":   #ooh look @ me sanitizing those inputs
+    v.sleep(0.5) #time for the file to be saved before loading
+    if not fileName[-4:] == ".txt":
         fileName += ".txt"
     try:
         inFile = open("animations/" + fileName,'r')
@@ -104,6 +108,8 @@ def animate(creature, fileName, speed=20, annotations = []): #make an animation,
             continue
         if not i % speed == 0: #only play one in every "speed" frames
             continue
+        if (not frameSave is None) and (i % 100 == 0):
+            saveGifFrame(v.scene)
         splitline = line.split()
         #get data
         creatData = []
@@ -160,6 +166,8 @@ def animate(creature, fileName, speed=20, annotations = []): #make an animation,
         v.rate(100)
     print("\r" + " "*60 + "\r", end='')
     inFile.close()
+    if not frameSave is None:
+        assembleGif(frameSave, (maxLines - 1) * simulator.h)
 
 def animate_main(creature, speed = None):
     fileName = "recent" # by default
@@ -171,13 +179,13 @@ def animate_main(creature, speed = None):
     
     actLogger = logger.loadLogger(creature.name)
     if not actLogger is None:
-        annotations.append(TestArrows(actLogger["limbPos"],
-                                      actLogger["walkForce"], scale = 0.1,
-                                        color = v.color.green))
-        annotations.append(TestSpheres(actLogger["desiredPoseCart"], color = v.color.red, radius = 0.1))
+#        annotations.append(TestArrows(actLogger["limbPos"],
+#                                      actLogger["walkForce"], scale = 0.1,
+#                                        color = v.color.green))
+#        annotations.append(TestSpheres(actLogger["desiredPoseCart"], color = v.color.red, radius = 0.1))
         pass
     while True:
-        args = input(">>>Enter animate (default), speed, load, log, arrows, spheres, or exit: ").split()
+        args = input(">>>Enter animate (default), speed, load, log, arrows, spheres, gif, or exit: ").split()
         command = args[0] if len(args) > 0 else ""
         if command == "speed" and len(args) > 1:
             speed = int(args[1])
@@ -212,10 +220,24 @@ def animate_main(creature, speed = None):
             else:
                 locLogName = input("Enter name of location log: ")
             annotations.append(TestSpheres(actLogger.l[locLogName]))
+        elif command == "gif":
+            if len(args) > 1:
+                gifFile = args[1]
+            else:
+                gifFile = input("Enter saved data file name: ")
+            gifFile = "animations/" + gifFile
+            animate(creature, fileName, speed, annotations, gifFile)
         elif command == "exit":
             creature.v = None
             del annotations
             break
+        elif command == "code":
+            while not command == "exit":
+                command = input(">>>")
+                try:
+                    print(eval(command))
+                except Exception as e:
+                    print(e)
         else:
             animate(creature, fileName, speed, annotations)
 
@@ -294,6 +316,66 @@ class TestSpheres:
         for i in range(self.numObj):
             self.spheres[0].visible = False
             del self.spheres[0]
+            
+            
+def saveGifFrame(scene):
+    """saves a frame of the animation for making a GIF (pronounced "Gif")"""
+    # For some reason, they only built in functionality to save screenshots to Downloads.
+    scene.capture("temp_sim_frame")
+    
+def assembleGif(fileName, duration):
+    """Assemble the saved GIFs to a file.
+    Requires PIL or Pillow library installed.
+    fileName is the file name and duration is in seconds"""
+    from os import path, remove
+    downloads_path = "C:/Users/Niraj/Downloads" # I am mad I have to do this
+    savePath = downloads_path + path.sep + "temp_sim_frame"
+    
+    try: #Try to import PIL
+        from PIL import Image
+    except:
+        print("Need PIL or Pillow installed to create GIFs")
+        #clean up
+        try:
+            remove(savePath + ".png")
+        except:
+            pass
+        numFrames = 1
+        while path.exists(savePath + " (" + str(numFrames) + ").png"):
+            try:
+                remove(savePath + " (" + str(numFrames) + ").png")
+                numFrames += 1
+            except:
+                pass
+        return
+    
+    if path.exists(savePath + ".png"):
+        images = [Image.open(savePath + ".png")]
+    else:
+        print("ERROR: Couldn't find the saved png images in your downloads. "+
+              "Honestly, it's not your fault, this is a weird way of making images. " +
+              "Find assembleGif in animate.py and change the download path.")
+        return None
+    numFrames = 1
+    while path.exists(savePath + " (" + str(numFrames) + ").png"):
+        images.append(Image.open(savePath + " (" + str(numFrames) + ").png"))
+        numFrames += 1
+    if not fileName[-4:] == ".gif":
+        fileName += ".gif"
+    images[0].save(fileName, save_all=True, append_images=images,
+                      optimize=False, duration=duration, loop=0)
+    print("\rCreated", fileName, "("+str(numFrames), "frames)")
+    #clean up
+    try:
+        remove(savePath + ".png")
+    except:
+        pass
+    for i in range(numFrames):
+        try:
+            remove(savePath + " (" + str(i+1) + ").png")
+        except:
+            pass
+    
             
 def np_to_v(array):
     return v.vector(array[0], array[1], array[2])
