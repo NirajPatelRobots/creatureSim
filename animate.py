@@ -84,8 +84,8 @@ def animate(creature, fileName, speed=20, annotations = [], frameSave = None):
     print("Starting animation at speed", speed)
     
     v.sleep(0.5) #time for the file to be saved before loading
-    if not fileName[-4:] == ".txt":
-        fileName += ".txt"
+    if not fileName[-5:] == ".anim":
+        fileName += ".anim"
     try:
         inFile = open("animations/" + fileName,'r')
     except:
@@ -106,10 +106,10 @@ def animate(creature, fileName, speed=20, annotations = [], frameSave = None):
         line = inLine.strip()
         if line.startswith("#"):
             continue
-        if not i % speed == 0: #only play one in every "speed" frames
-            continue
         if (not frameSave is None) and (i % 100 == 0):
             saveGifFrame(v.scene)
+        if not i % speed == 0: #only play one in every "speed" frames
+            continue
         splitline = line.split()
         #get data
         creatData = []
@@ -350,15 +350,16 @@ def assembleGif(fileName, duration):
         return
     
     if path.exists(savePath + ".png"):
-        images = [Image.open(savePath + ".png")]
+        images = [Image.open(savePath + ".png").reduce(2)]
     else:
         print("ERROR: Couldn't find the saved png images in your downloads. "+
               "Honestly, it's not your fault, this is a weird way of making images. " +
-              "Find assembleGif in animate.py and change the download path.")
+              "If it previously worked, make sure you have the animation window selected. "+
+              "If not, Find assembleGif in animate.py and change the download path.")
         return None
     numFrames = 1
     while path.exists(savePath + " (" + str(numFrames) + ").png"):
-        images.append(Image.open(savePath + " (" + str(numFrames) + ").png"))
+        images.append(Image.open(savePath + " (" + str(numFrames) + ").png").reduce(2))
         numFrames += 1
     if not fileName[-4:] == ".gif":
         fileName += ".gif"
